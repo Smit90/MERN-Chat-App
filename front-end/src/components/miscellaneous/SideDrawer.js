@@ -45,6 +45,7 @@ function SideDrawer() {
     setNotification,
     chats,
     setChats,
+    socket,
   } = ChatState();
 
   const toast = useToast();
@@ -52,8 +53,13 @@ function SideDrawer() {
   const navigate = useNavigate();
 
   const logoutHandler = () => {
+    socket.emit("logout", user);
     localStorage.removeItem("userInfo");
     navigate("/");
+  };
+
+  const handleSettingClick = () => {
+    navigate("/settings");
   };
 
   const handleSearch = async () => {
@@ -141,7 +147,12 @@ function SideDrawer() {
             </Text>
           </Button>
         </Tooltip>
-        <Text fontSize="2xl" fontFamily="Work sans">
+        <Text
+          onClick={() => navigate("/chats")}
+          fontSize="2xl"
+          fontFamily="Work sans"
+          cursor="pointer"
+        >
           Cross Chat
         </Text>
         <div>
@@ -183,6 +194,8 @@ function SideDrawer() {
               <ProfileModal user={user}>
                 <MenuItem>My Profile</MenuItem>{" "}
               </ProfileModal>
+              <MenuDivider />
+              <MenuItem onClick={handleSettingClick}>Settings</MenuItem>
               <MenuDivider />
               <MenuItem onClick={logoutHandler}>Logout</MenuItem>
             </MenuList>

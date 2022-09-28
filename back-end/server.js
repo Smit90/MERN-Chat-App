@@ -42,12 +42,26 @@ const io = require("socket.io")(server, {
   },
 });
 
+var onlineUsers = [];
+
 io.on("connection", (socket) => {
   console.log("Connected to socket.io");
+
   socket.on("setup", (userData) => {
     socket.join(userData._id);
+    const isExist = onlineUsers.some((x) => x == userData._id);
+    if (!isExist) {
+      onlineUsers.push(userData._id);
+    }
     console.log("test");
-    socket.emit("connected");
+    socket.emit("connected", onlineUsers);
+    socket.broadcast.emit("connected", onlineUsers);
+  });
+
+  socket.on("logout", (userData) => {
+    socket.leave(userData._id);
+    onlineUsers = onlineUsers.filter((x) => x != userData._id);
+    socket.broadcast.emit("connected", onlineUsers);
   });
 
   socket.on("join chat", (room) => {
@@ -74,5 +88,7 @@ io.on("connection", (socket) => {
   socket.off("setup", () => {
     console.log("USER DISCONNECTED");
     socket.leave(userData._id);
+    onlineUsers = onlineUsers.filter((x) => x != userData._id);
+    socket.broadcast.emit("connected", onlineUsers);
   });
 });

@@ -82,4 +82,25 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { allUsers, registerUser, authUser };
+const updateUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { name, email } = req.body;
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      name: name,
+      email: email,
+    },
+    { new: true }
+  );
+
+  if (!updateUser) {
+    res.sendStatus(404);
+    throw new Error("User Not Found");
+  } else {
+    res.json(updatedUser);
+  }
+});
+
+module.exports = { allUsers, registerUser, authUser, updateUser };
