@@ -3,16 +3,17 @@ import { Box, Stack, Text } from "@chakra-ui/layout";
 import { useToast } from "@chakra-ui/toast";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { getSender, getSenderFull } from "../config/ChatLogics";
+import { getSender, getSenderFull, getReceiver } from "../config/ChatLogics";
 import ChatLoading from "./ChatLoading";
 import GroupChatModal from "./miscellaneous/GroupChatModal";
-import { Avatar, background, Button } from "@chakra-ui/react";
+import { Avatar, AvatarBadge, background, Button } from "@chakra-ui/react";
 import { ChatState } from "../Context/ChatProvider";
 
 const MyChats = ({ fetchAgain }) => {
   const [loggedUser, setLoggedUser] = useState();
 
-  const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
+  const { selectedChat, setSelectedChat, user, chats, setChats, onlineUsers } =
+    ChatState();
 
   const toast = useToast();
 
@@ -45,9 +46,22 @@ const MyChats = ({ fetchAgain }) => {
     // eslint-disable-next-line
   }, [fetchAgain]);
 
+  const checkStatus = (id) => {
+    const online = onlineUsers?.some((x) => {
+      return x == id;
+    });
+    if (online) {
+      return <AvatarBadge boxSize="1.25em" bg="green.500" />;
+    } else {
+      return (
+        <AvatarBadge borderColor="papayawhip" bg="tomato" boxSize="1.25em" />
+      );
+    }
+  };
+
   return (
     <Box
-      d={{ base: selectedChat ? "none" : "flex", md: "flex" }}
+      display={{ base: selectedChat ? "none" : "flex", md: "flex" }}
       flexDir="column"
       alignItems="center"
       p={3}
@@ -114,7 +128,9 @@ const MyChats = ({ fetchAgain }) => {
                         cursor="pointer"
                         name={chatDetail.name}
                         src={chatDetail.pic ? chatDetail.pic : ""}
-                      />
+                      >
+                        {checkStatus(chatDetail._id)}
+                      </Avatar>
                       <Text>{chatDetail.name}</Text>
                     </Box>
                   ) : (

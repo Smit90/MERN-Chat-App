@@ -2,6 +2,7 @@ import "./App.css";
 import { Route, Routes } from "react-router-dom";
 import Homepage from "./Pages/HomePage";
 import Chatpage from "./Pages/ChatPage";
+import SettingPage from "./Pages/SettingPage";
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/" exact element={<Homepage />} />
         <Route path="/chats" exact element={<Chatpage />} />
+        <Route path="/settings" exact element={<SettingPage />} />
       </Routes>
     </div>
   );
