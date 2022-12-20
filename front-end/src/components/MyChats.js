@@ -8,6 +8,7 @@ import ChatLoading from "./ChatLoading";
 import GroupChatModal from "./miscellaneous/GroupChatModal";
 import { Avatar, AvatarBadge, background, Button } from "@chakra-ui/react";
 import { ChatState } from "../Context/ChatProvider";
+import { decrypt } from "../hashing";
 
 const MyChats = ({ fetchAgain }) => {
   const [loggedUser, setLoggedUser] = useState();
@@ -149,9 +150,9 @@ const MyChats = ({ fetchAgain }) => {
                   {chat.latestMessage && (
                     <Text fontSize="xs" mt={2}>
                       <b>{chat.latestMessage.sender.name} : </b>
-                      {chat.latestMessage.content.length > 50
-                        ? chat.latestMessage.content.substring(0, 51) + "..."
-                        : chat.latestMessage.content}
+                      {decrypt(chat.latestMessage.content.length) > 50
+                        ? decrypt(chat.latestMessage.content).substring(0, 51) + "..."
+                        : decrypt(chat.latestMessage.content)}
                     </Text>
                   )}
                 </Box>

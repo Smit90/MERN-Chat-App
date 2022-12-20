@@ -26,6 +26,7 @@ import io from "socket.io-client";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { ChatState } from "../Context/ChatProvider";
 import { useRef } from "react";
+import { decrypt, encrypt } from "../hashing";
 // const ENDPOINT = "http://localhost:5000";
 // var socket
 var selectedChatCompare;
@@ -105,7 +106,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         const { data } = await axios.post(process.env.REACT_APP_SERVER_URL +
           "/api/message",
           {
-            content: newMessage,
+            content: encrypt(newMessage),
             chatId: selectedChat,
           },
           config
