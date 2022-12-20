@@ -26,7 +26,7 @@ const MyChats = ({ fetchAgain }) => {
         },
       };
 
-      const { data } = await axios.get("/api/chat", config);
+      const { data } = await axios.get(process.env.REACT_APP_SERVER_URL + "/api/chat", config);
       setChats(data);
     } catch (error) {
       toast({
@@ -118,7 +118,7 @@ const MyChats = ({ fetchAgain }) => {
                   py={2}
                   borderRadius="lg"
                   key={chat._id}
-                  // display="flex"
+                // display="flex"
                 >
                   {!chat.isGroupChat ? (
                     <Box display="flex" alignItems="center">

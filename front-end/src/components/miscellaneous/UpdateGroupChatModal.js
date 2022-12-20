@@ -46,7 +46,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get(`/api/user?search=${search}`, config);
+      const { data } = await axios.get(process.env.REACT_APP_SERVER_URL + `/api/user?search=${search}`, config);
       console.log(data);
       setLoading(false);
       setSearchResult(data);
@@ -73,7 +73,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.put(
+      const { data } = await axios.put(process.env.REACT_APP_SERVER_URL +
         `/api/chat/rename`,
         {
           chatId: selectedChat._id,
@@ -131,7 +131,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.put(
+      const { data } = await axios.put(process.env.REACT_APP_SERVER_URL +
         `/api/chat/groupadd`,
         {
           chatId: selectedChat._id,
@@ -176,7 +176,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.put(
+      const { data } = await axios.put(process.env.REACT_APP_SERVER_URL +
         `/api/chat/groupremove`,
         {
           chatId: selectedChat._id,
