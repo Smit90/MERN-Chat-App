@@ -93,4 +93,16 @@ io.on("connection", (socket) => {
     onlineUsers = onlineUsers.filter((x) => x != userData._id);
     socket.broadcast.emit("connected", onlineUsers);
   });
+
+  // calling feature
+  socket.emit("me", socket.id);
+
+  socket.on("callUser", ({ userToCall, signalData, from, name }) => {
+    io.to(userToCall).emit("callUser", { signal: signalData, from, name });
+  });
+
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal)
+  });
+
 });

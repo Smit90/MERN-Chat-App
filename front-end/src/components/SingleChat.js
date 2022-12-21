@@ -295,12 +295,12 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             />
             {messages &&
               (!selectedChat.isGroupChat ? (
-                <>
+                <div>
                   {getSender(user, selectedChat.users)}
                   <ProfileModal
                     user={getSenderFull(user, selectedChat.users)}
                   />
-                </>
+                </div>
               ) : (
                 <>
                   {selectedChat.chatName.toUpperCase()}
