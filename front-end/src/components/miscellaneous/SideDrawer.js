@@ -61,6 +61,9 @@ function SideDrawer() {
   const handleSettingClick = () => {
     navigate("/settings");
   };
+  const handleVideoCallClick = () => {
+    navigate("/video");
+  };
 
   const handleSearch = async () => {
     if (!search) {
@@ -196,6 +199,8 @@ function SideDrawer() {
               </ProfileModal>
               <MenuDivider />
               <MenuItem onClick={handleSettingClick}>Settings</MenuItem>
+              <MenuDivider />
+              <MenuItem onClick={handleVideoCallClick}>Video Call</MenuItem>
               <MenuDivider />
               <MenuItem onClick={logoutHandler}>Logout</MenuItem>
             </MenuList>
