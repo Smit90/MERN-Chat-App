@@ -19,13 +19,13 @@ const ContextProvider = ({ children }) => {
     const userVideo = useRef();
     const connectionRef = useRef();
 
-    useEffect(() => {
-        console.log("myVideo", myVideo)
-        if (stream && myVideo.current) {
-            myVideo.current.srcObject = stream;
+    // useEffect(() => {
+    //     console.log("myVideo", myVideo)
+    //     if (stream && myVideo.current) {
+    //         myVideo.current.srcObject = stream;
 
-        }
-    }, [stream])
+    //     }
+    // }, [stream])
 
     useEffect(() => {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
@@ -43,6 +43,10 @@ const ContextProvider = ({ children }) => {
             setCall({ isReceivingCall: true, from, name: callerName, signal });
         });
     }, []);
+
+    const getMyVideoStream = () => {
+        myVideo.current.srcObject = stream;
+    }
 
     const answerCall = () => {
         setCallAccepted(true);
@@ -87,7 +91,7 @@ const ContextProvider = ({ children }) => {
 
         connectionRef.current.destroy();
 
-        // window.location.reload();
+        window.location.reload();
     };
 
     return (
@@ -104,6 +108,7 @@ const ContextProvider = ({ children }) => {
             callUser,
             leaveCall,
             answerCall,
+            getMyVideoStream
         }}
         >
             {children}

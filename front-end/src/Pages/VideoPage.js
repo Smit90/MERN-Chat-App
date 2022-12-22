@@ -15,10 +15,10 @@ const VideoPage = () => {
     const [idToCall, setIdToCall] = useState('');
 
     const { user, chats, setChats, onlineUsers, selectedChat, setSelectedChat } = ChatState();
-    const [fetchAgain, setFetchAgain] = useState(false);
     const toast = useToast();
 
-    const { call, answerCall, leaveCall, callUser, me, stream, userVideo, myVideo, callAccepted, name, callEnded, setName } = useContext(SocketContext);
+    const { call, answerCall, leaveCall, callUser, me, stream, userVideo, myVideo, callAccepted, name, callEnded, setName, getMyVideoStream } = useContext(SocketContext);
+    console.log("🚀 ~ file: VideoPage.js:21 ~ VideoPage ~ call", call)
     const fetchChats = async () => {
         // console.log(user._id);
         try {
@@ -44,15 +44,17 @@ const VideoPage = () => {
     };
     useEffect(() => {
         if (user) {
+            setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
             setName(user.name)
             fetchChats()
         }
     }, [user])
 
     useEffect(() => {
-
-        console.log("🚀 ~ file: VideoPage.js:54 ~ VideoPage ~ call", call)
-    }, [call])
+        if (user && myVideo.current) {
+            getMyVideoStream()
+        }
+    }, [stream])
 
     const checkStatus = (id) => {
         const online = onlineUsers?.some((x) => {
@@ -110,9 +112,10 @@ const VideoPage = () => {
                                     borderRadius="lg"
                                     display="flex"
                                     justifyContent="space-between"
+                                    key={chat._id}
                                 >{
-                                        !chat.isGroupChat ? (
-                                            <Box display="flex" alignItems="center">
+                                        !chat.isGroupChat && (
+                                            <><Box display="flex" alignItems="center">
                                                 <Avatar
                                                     mr={2}
                                                     size="sm"
@@ -123,25 +126,25 @@ const VideoPage = () => {
                                                     {checkStatus(chatDetail._id)}
                                                 </Avatar>
                                                 <Text>{chatDetail.name}</Text>
-                                            </Box>
-                                        ) : (
-                                            <Box display="flex" alignItems="center">
-                                                <Avatar
-                                                    mr={2}
-                                                    size="sm"
-                                                    cursor="pointer"
-                                                    name={chat.chatName}
-                                                />
-                                                <Box>
-                                                    <Text>{chat.chatName}</Text>
-                                                </Box>
-                                            </Box>
+                                            </Box><IconButton d={{ base: "flex" }} icon={<PhoneIcon />} onClick={() => {
+                                                onOpen();
+                                                setSelectedChat(chat);
+                                            }} /></>
                                         )
+                                        // : (
+                                        //     <Box display="flex" alignItems="center">
+                                        //         <Avatar
+                                        //             mr={2}
+                                        //             size="sm"
+                                        //             cursor="pointer"
+                                        //             name={chat.chatName}
+                                        //         />
+                                        //         <Box>
+                                        //             <Text>{chat.chatName}</Text>
+                                        //         </Box>
+                                        //     </Box>
+                                        // )
                                     }
-                                    < IconButton d={{ base: "flex" }} icon={<PhoneIcon />} onClick={() => {
-                                        onOpen()
-                                        setSelectedChat(chat)
-                                    }} />
                                 </Box>
                             })
                         }
@@ -150,42 +153,36 @@ const VideoPage = () => {
                     <ChatLoading />
                 )}
             </Box>
-            <Box
-                display="flex"
-                justifyContent="space-between"
-                w="100%"
-                h="91.5vh"
-                p="10px"
-            >
-                <Grid>
-                    <GridItem>
-
-                        {user &&
-
-                            callAccepted && !callEnded && <div>
-                                <Text fontSize={{ base: "28px", md: "30px" }}
-                                    fontFamily="Work sans">{name || user.name || 'Name'}</Text>
-                                <video width="400" playsInline muted ref={userVideo} autoPlay />
-                            </div>
-                        }
-                    </GridItem>
-                    <GridItem>
-
+            <Box m="2" >
+                <SimpleGrid columns={2} spacing={10}>
+                    <Box >
                         {
                             stream &&
                             <div>
                                 <Text fontSize={{ base: "28px", md: "30px" }}
-                                    fontFamily="Work sans">{name || user.name || 'Name'}</Text>
-                                <video width="400" playsInline muted ref={myVideo} autoPlay />
+                                    fontFamily="Work sans">{user.name || 'Name'}</Text>
+                                <video width="452" playsInline muted ref={myVideo} autoPlay />
                             </div>
 
                         }
-                    </GridItem>
+                    </Box>
+                    <Box >
+                        {
+                            callAccepted && !callEnded && <div>
+                                <Text fontSize={{ base: "28px", md: "30px" }}
+                                    fontFamily="Work sans">{call.name || !selectedChat.isGroupChat && getSenderFull(loggedUser, selectedChat.users)?.name || 'Name'}</Text>
+                                <video width="452" playsInline muted ref={userVideo} autoPlay />
+                            </div>
+                        }
+                    </Box>
+                </SimpleGrid>
+                <Center mt="5">
+
                     {callAccepted && !callEnded && (
                         <Button colorScheme='red' onClick={leaveCall} >Hang Up</Button>
                     )
                     }
-                </Grid>
+                </Center>
             </Box>
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
