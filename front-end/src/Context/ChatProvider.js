@@ -15,6 +15,9 @@ const ChatProvider = ({ children }) => {
   const [onlineUsers, setOnlineUsers] = useState(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const navigate = useNavigate();
+  const [me, setMe] = useState('');
+  const [call, setCall] = useState({});
+
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -25,6 +28,12 @@ const ChatProvider = ({ children }) => {
       socket.on("connected", (data) => {
         setSocketConnected(true);
         setOnlineUsers(data);
+      });
+      socket.on('me', (id) => {
+        setMe(id)
+      })
+      socket.on("callUser", ({ from, name: callerName, signal }) => {
+        setCall({ isReceivingCall: true, from, name: callerName, signal });
       });
     }
 
@@ -37,6 +46,8 @@ const ChatProvider = ({ children }) => {
       value={{
         selectedChat,
         setSelectedChat,
+        me,
+        call,
         user,
         setUser,
         notification,
