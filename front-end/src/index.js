@@ -4,20 +4,20 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { ChakraProvider } from "@chakra-ui/react";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import ChatProvider from "./Context/ChatProvider";
 import { ContextProvider } from "./Context/SocketContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <ChakraProvider>
-    <BrowserRouter>
+    <HashRouter>
       <ChatProvider>
         {/* <ContextProvider> */}
         <App />
         {/* </ContextProvider> */}
       </ChatProvider>
-    </BrowserRouter>
+    </HashRouter>
   </ChakraProvider>
 );
 
