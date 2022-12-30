@@ -132,7 +132,17 @@ const MyChats = ({ fetchAgain }) => {
                       >
                         {checkStatus(chatDetail._id)}
                       </Avatar>
-                      <Text>{chatDetail.name}</Text>
+                      <Box display="block" >
+                        <Text>{chatDetail.name}</Text>
+                        {chat.latestMessage && chat.latestMessage.content_type == "text" && (
+                          <Text fontSize="xs" >
+                            <b>{chat.latestMessage.sender.name} : </b>
+                            {decrypt(chat.latestMessage.content.length) > 50
+                              ? decrypt(chat.latestMessage.content).substring(0, 51) + "..."
+                              : decrypt(chat.latestMessage.content)}
+                          </Text>
+                        )}
+                      </Box>
                     </Box>
                   ) : (
                     <Box display="flex" alignItems="center">
@@ -142,19 +152,27 @@ const MyChats = ({ fetchAgain }) => {
                         cursor="pointer"
                         name={chat.chatName}
                       />
-                      <Box>
+                      <Box display="block" >
                         <Text>{chat.chatName}</Text>
+                        {chat.latestMessage && chat.latestMessage.content_type == "text" && (
+                          <Text fontSize="xs" >
+                            <b>{chat.latestMessage.sender.name} : </b>
+                            {decrypt(chat.latestMessage.content.length) > 50
+                              ? decrypt(chat.latestMessage.content).substring(0, 51) + "..."
+                              : decrypt(chat.latestMessage.content)}
+                          </Text>
+                        )}
                       </Box>
                     </Box>
                   )}
-                  {chat.latestMessage && (
+                  {/* {chat.latestMessage && chat.latestMessage.content_type == "text" && (
                     <Text fontSize="xs" mt={2}>
                       <b>{chat.latestMessage.sender.name} : </b>
                       {decrypt(chat.latestMessage.content.length) > 50
                         ? decrypt(chat.latestMessage.content).substring(0, 51) + "..."
                         : decrypt(chat.latestMessage.content)}
                     </Text>
-                  )}
+                  )} */}
                 </Box>
               );
             })}

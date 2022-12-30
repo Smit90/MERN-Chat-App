@@ -3,18 +3,32 @@ import { Input } from "@chakra-ui/input";
 import { Box, Text } from "@chakra-ui/layout";
 import "./styles.css";
 import {
-  IconButton, Spinner, useToast, InputGroup, InputRightElement, InputLeftElement, InputLeftAddon, Menu,
+  IconButton,
+  Spinner,
+  useToast,
+  InputGroup,
+  InputRightElement,
+  InputLeftElement,
+  InputLeftAddon,
+  Menu,
   MenuButton,
   MenuList,
   MenuItem,
   Image,
   Button,
-  Avatar
+  Avatar,
 } from "@chakra-ui/react";
 import { getSender, getSenderFull } from "../config/ChatLogics";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { ArrowBackIcon, AtSignIcon, AttachmentIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import {
+  ArrowBackIcon,
+  AtSignIcon,
+  AttachmentIcon,
+  ChevronDownIcon,
+  DeleteIcon,
+  SmallCloseIcon,
+} from "@chakra-ui/icons";
 import ProfileModal from "./miscellaneous/ProfileModal";
 import ScrollableChat from "./ScrollableChat";
 import Lottie from "react-lottie";
@@ -35,12 +49,17 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
+  const [previewURLs, setPreviewURLs] = useState([]);
+  const [showDeleteIcon, setShowDeleteIcon] = useState(false);
+  const [hoverImageId, setHoverImageId] = useState(null);
+  const [uploadFiles, setUploadFiles] = useState([]);
+
   // const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const toast = useToast();
-  const attachmentRef = useRef(null)
+  const attachmentRef = useRef(null);
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -72,8 +91,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
       setLoading(true);
 
-      const { data } = await axios.get(process.env.REACT_APP_SERVER_URL +
-        `/api/message/${selectedChat._id}`,
+      const { data } = await axios.get(
+        process.env.REACT_APP_SERVER_URL + `/api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -93,38 +112,47 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   };
 
   const sendMessage = async (event) => {
+    if (event.key === "Enter" && previewURLs.length !== 0) {
+      uploadToCloundinary()
+    }
     if (event.key === "Enter" && newMessage) {
       socket && socket.emit("stop typing", selectedChat._id);
-      try {
-        const config = {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-        };
-        setNewMessage("");
-        const { data } = await axios.post(process.env.REACT_APP_SERVER_URL +
-          "/api/message",
-          {
-            content: encrypt(newMessage),
-            chatId: selectedChat,
-          },
-          config
-        );
-        socket && socket.emit("new message", data);
-        setMessages([...messages, data]);
-      } catch (error) {
-        toast({
-          title: "Error Occured!",
-          description: "Failed to send the Message",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "top-right",
-        });
-      }
+      sendMessageToServer(newMessage, 'text')
     }
   };
+
+  const sendMessageToServer = async (message, type) => {
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      setNewMessage("");
+      setPreviewURLs([])
+      const { data } = await axios.post(
+        process.env.REACT_APP_SERVER_URL + "/api/message",
+        {
+          content: encrypt(message),
+          chatId: selectedChat,
+          content_type: type
+        },
+        config
+      );
+      socket && socket.emit("new message", data);
+      setMessages([...messages, data]);
+    } catch (error) {
+      toast({
+        title: "Error Occured!",
+        description: "Failed to send the Message",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+  }
 
   useEffect(() => {
     // socket = io(ENDPOINT);
@@ -146,6 +174,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
     selectedChatCompare = selectedChat;
     // eslint-disable-next-line
+    return () => {
+      setPreviewURLs([])
+      setNewMessage("")
+      setEmojiPickerOpen(false)
+    }
   }, [selectedChat]);
 
   useEffect(() => {
@@ -202,51 +235,155 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   // };
 
   const handleAtUser = (user) => {
-    const userName = '@' + user.name
-    setNewMessage((prev) => prev ? prev + ' ' + userName : userName);
-  }
+    const userName = "@" + user.name;
+    setNewMessage((prev) => (prev ? prev + " " + userName : userName));
+  };
 
   const leftInputAddon = () => {
-    const sender = JSON.parse(localStorage.getItem('userInfo'))
+    const sender = JSON.parse(localStorage.getItem("userInfo"));
     return (
       <InputLeftAddon>
         <Menu>
           {({ isOpen }) => (
             <>
-              <MenuButton >
+              <MenuButton>
                 <AtSignIcon cursor="pointer" />
               </MenuButton>
               <MenuList>
-                {selectedChat.users && selectedChat.users.map((user, index) => {
-                  return (
-                    <MenuItem key={index} minH='48px' onClick={() => handleAtUser(user)} >
-                      <Avatar
-                        mr={2}
-                        size="sm"
-                        cursor="pointer"
-                        name={user.name}
-                        src={user.pic ? user.pic : ""}
-                      />
-                      <span>{sender.email == user.email ? user.name + " (You)" : user.name}</span>
-                    </MenuItem>
-                  )
-                })}
+                {selectedChat.users &&
+                  selectedChat.users.map((user, index) => {
+                    return (
+                      <MenuItem
+                        key={index}
+                        minH="48px"
+                        onClick={() => handleAtUser(user)}
+                      >
+                        <Avatar
+                          mr={2}
+                          size="sm"
+                          cursor="pointer"
+                          name={user.name}
+                          src={user.pic ? user.pic : ""}
+                        />
+                        <span>
+                          {sender.email == user.email
+                            ? user.name + " (You)"
+                            : user.name}
+                        </span>
+                      </MenuItem>
+                    );
+                  })}
               </MenuList>
             </>
           )}
         </Menu>
       </InputLeftAddon>
-    )
+    );
+  };
+
+  const randstr = (prefix) => {
+    return Math.random()
+      .toString(36)
+      .replace("0.", prefix || "");
+  };
+
+  const createURLFromImage = (files) => {
+    const previewArr = files.map((file) => {
+      return { name: file.name, id: randstr(), url: URL.createObjectURL(file), file: file };
+    });
+    setPreviewURLs(previewArr);
+  };
+
+
+  const uploadToCloundinary = async () => {
+    setLoading(true)
+    const uploaders = previewURLs.map(file => {
+      const data = new FormData();
+      data.append("file", file.file);
+      data.append("upload_preset", process.env.REACT_APP_UPLOAD_PRESET);
+      data.append("cloud_name", process.env.REACT_APP_CLOUD_NAME);
+
+      // Make an AJAX upload request using Axios (replace Cloudinary URL below with your own)
+      return axios.post(`https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload`, data, {
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      })
+    });
+
+    // Once all the files are uploaded 
+    axios.all(uploaders)
+      .then((ress) => {
+        setLoading(false)
+        setPreviewURLs([])
+        console.log(ress, "ress")
+        const images = ress.map((img) => {
+          return { name: img.data.original_filename, url: img.data.secure_url, content_type: img.data.resource_type }
+        })
+        sendMessageToServer(JSON.stringify(images), 'images')
+
+        // ... perform after upload is successful operation
+      });
+
   }
 
-  const handleFileUpload = event => {
-    console.log(event.target.files[0]);
+  const handleFileUpload = (event) => {
+    const files = Array.prototype.slice.call(event.target.files);
+    if (files.length > 10) {
+      toast({
+        title: "Upload Limit",
+        description: "You can only upload 10 files at a time.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+      createURLFromImage(files.slice(0, 10));
+      // setUploadFiles(files.slice(0, 10))
+    } else {
+      createURLFromImage(files);
+      // setUploadFiles(files)
+    }
   };
+
+  const handleRemoveImg = (img) => {
+    const newArr = previewURLs.filter((x) => x.id !== img.id)
+    setPreviewURLs(newArr);
+    if (newArr.length == 0) {
+      attachmentRef.current.value = null
+    }
+  };
+
+  const showRemoveImageIcon = (img) => {
+    return (
+      <>
+        <IconButton
+          position="absolute"
+          top="25%"
+          right="25%"
+          d={{ base: "flex", md: "none" }}
+          icon={<DeleteIcon boxSize={5} color="red.500" />}
+          background="whiteAlpha.800"
+          onClick={() => handleRemoveImg(img)}
+        />
+      </>
+    );
+  };
+
   const rightInputElement = () => {
     return (
-      <InputRightElement width='4.5rem'>
-        <AttachmentIcon ref={attachmentRef} marginRight="5px" cursor="pointer" onClick={() => attachmentRef.current.click()} />
-        <Input ref={attachmentRef} type="file" multiple={true} hidden={true} onChange={handleFileUpload} />
+      <InputRightElement width="4.5rem">
+        <AttachmentIcon
+          ref={attachmentRef}
+          marginRight="5px"
+          cursor="pointer"
+          onClick={() => attachmentRef.current.click()}
+        />
+        <Input
+          ref={attachmentRef}
+          type="file"
+          multiple={true}
+          hidden={true}
+          onChange={handleFileUpload}
+        />
         {!emojiPickerOpen ? (
           <svg
             cursor="pointer"
@@ -271,6 +408,45 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           </svg>
         )}
       </InputRightElement>
+    );
+  };
+
+  const previewBox = () => {
+    return (
+      <Box mt="2.5">
+        {previewURLs.map((img) => {
+          return (
+            <Box
+              id={img.id}
+              key={img.id}
+              mr="2.5"
+              display="inline-block"
+              position="relative"
+              onMouseEnter={() => {
+                setShowDeleteIcon(true);
+                setHoverImageId(img.id);
+              }}
+              onMouseLeave={() => {
+                setShowDeleteIcon(false);
+                setHoverImageId(null);
+              }}
+            >
+              <Image
+                borderRadius="md"
+                boxSize="75px"
+                objectFit="cover"
+                src={img.url}
+                alt={img.name}
+                filter="auto"
+                brightness={hoverImageId == img.id ? "40%" : "100%"}
+              />
+              {showDeleteIcon &&
+                hoverImageId == img.id &&
+                showRemoveImageIcon(img)}
+            </Box>
+          );
+        })}
+      </Box>
     )
   }
 
@@ -363,10 +539,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
               ) : (
                 <></>
               )}
-              <Box display="flex" alignItems="center">
-                <InputGroup size='md'>
+              <Box alignItems="center">
+                <InputGroup size="md">
                   {selectedChat.isGroupChat && leftInputAddon()}
                   <Input
+                    autoComplete="off"
                     contentEditable
                     variant="filled"
                     bg="#E0E0E0"
@@ -378,6 +555,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                   />
                   {rightInputElement()}
                 </InputGroup>
+                {previewURLs.length !== 0 && previewBox()}
               </Box>
             </FormControl>
           </Box>
